@@ -10,7 +10,13 @@ Now that you've built your own CNN and seen how to visualize feature maps, its t
 You will be able to:
 
 * Load a saved model
+    * makes it easier to share
+    * trained/has weights
+    * summary and learn about your model
 * Visualize the filters produced by hidden layers in a CNN
+    * What dictates the number of images created in a layer?
+        * Number of nodes
+    * Iterate through your layters using the load_model library
 
 ## Load a Model  
 
@@ -24,11 +30,6 @@ from keras.models import load_model
 model = load_model('chest_xray_all_with_augmentation_data.h5')
 model.summary()
 ```
-
-    /Users/matthew.mitchell/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
-      from ._conv import register_converters as _register_converters
-    Using TensorFlow backend.
-
 
     _________________________________________________________________
     Layer (type)                 Output Shape              Param #   
@@ -98,7 +99,9 @@ img_tensor = image.img_to_array(img)
 img_tensor = np.expand_dims(img_tensor, axis=0)
 
 #Follow the Original Model Preprocessing
-img_tensor /= 255.
+img_tensor /= 255. # why divide by 255? Normalizes it
+
+#0 - 255 /255 -> 0 and 1
 
 #Check tensor shape
 print(img_tensor.shape)
@@ -123,6 +126,43 @@ To preview the results of our solution code, take a sneek peak at the Intermedia
 
 
 ```python
+model.layers[2].name
+```
+
+
+
+
+    'conv2d_2'
+
+
+
+
+```python
+for a in activations:
+    print(a.shape)
+    aa = a[0][0][0]
+    print(aa)
+    print(((aa - aa.mean())/aa.std())*64 + 128)
+    break
+```
+
+    (1, 148, 148, 32)
+    [112.028885 140.60341   40.497643  45.86606  128.96552  101.94648
+     160.86565   88.39211   37.847816  36.680244 119.63902   92.57716
+      21.688644  42.99106  163.71036  138.22508   33.15107   40.948227
+      28.43      36.668602  43.056847 129.33823   41.207085 133.29005
+      40.800117  53.88736   75.34276  139.79459  101.39128   51.58864
+     106.96156   42.949905]
+    [173.67303  214.8757    70.529495  78.27041  198.0946   159.13484
+     244.09258  139.5903    66.70861   65.02504  184.64638  145.62488
+      43.408104  74.12484  248.19447  211.44632   59.936195  71.17921
+      53.128716  65.008255  74.2197   198.63202   71.55246  204.3303
+      70.96564   89.836624 120.77396  213.70944  158.33429   86.52201
+     166.36629   74.065506]
+
+
+
+```python
 #Your code here
 from keras import models
 import math #used for determining the number of rows in our figure below
@@ -143,7 +183,7 @@ for layer in model.layers[:8]:
 total_features = sum([a.shape[-1] for a in activations])
 total_features
 
-n_cols = 16
+n_columns = 16
 n_rows = math.ceil(total_features / n_columns)
 
 
@@ -157,10 +197,9 @@ for layer_n, layer_activation in enumerate(activations):
         column = iteration % n_columns
     
         ax = axes[row, column]
-
-        channel_image = layer_activation[0,
-                                         :, :,
-                                         ch_idx]
+        
+        # 
+        channel_image = layer_activation[0, :, :, ch_idx]
         # Post-process the feature to make it visually palatable
         channel_image -= channel_image.mean()
         channel_image /= channel_image.std()
@@ -181,11 +220,11 @@ plt.savefig("Intermediate_Activations_Visualized.pdf")
 plt.show()
 ```
 
-    /Users/matthew.mitchell/anaconda3/lib/python3.6/site-packages/ipykernel_launcher.py:41: RuntimeWarning: invalid value encountered in true_divide
+    /anaconda3/lib/python3.6/site-packages/ipykernel_launcher.py:41: RuntimeWarning: invalid value encountered in true_divide
 
 
 
-![png](index_files/index_8_1.png)
+![png](index_files/index_10_1.png)
 
 
 ## Summary
